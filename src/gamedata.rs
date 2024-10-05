@@ -1,6 +1,8 @@
 pub mod person;
 pub mod class;
 pub mod item;
+pub mod scenario;
+
 
 pub fn offset_to_addr<T>(offset: usize) -> *mut T {
     unsafe { (skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as usize + offset) as *mut T }
@@ -42,7 +44,7 @@ impl<'a, T, const N: usize> FixedTable<'a, T, N> {
     pub fn get_table_mut(offset: usize) -> &'static mut FixedTable<'a, T, N> {
         return unsafe { *offset_to_addr::<&'static mut FixedTable<'a, T, N>>(offset) };
     }
-    pub fn get_entry(&'a self, index: usize) -> &'a T {
+    pub fn get_entry(&'a mut self, index: usize) -> &'a mut T {
         if index < N { self.entries[index].entry}
         else { self.entries[0].entry }
     }
@@ -51,34 +53,12 @@ impl<'a, T, const N: usize> FixedTable<'a, T, N> {
 
 pub trait FixedDataTable<T, const N: usize> {
     fn get_table() -> &'static mut FixedTable<'static, T, N>;
-    fn get_entry(index: usize) -> &'static T {
+    fn get_entry(index: usize) -> &'static mut T {
         Self::get_table().get_entry(index)
     }
 }
 
-#[repr(C)]
-pub struct ItemData {
-    pub item_when_broken: i16,
-    pub skill_properies: [u8; 2],
-    pub weapon_effect: u8,
-    pub weapon_type: u8,
-    pub rank: u8,
-    pub max_range: u8,
-    pub weapon_model_id: u8,
-    pub crests: u8,
-    pub min_range: u8,
-    pub uses: u8,
-    pub extra_effects: u8,
-    pub item_type: u8,
-    pub effectiveness: u8,
-    unk2: u8,
-    pub increase: u8,
-    pub stat: u8,
-    pub crit: u8,
-    pub weight: u8,
-    pub flags: [u8; 3],
-    padding: u8,
-}
+
 
 #[repr(C)]
 pub struct FlowEntry {
@@ -91,3 +71,5 @@ pub struct FlowEntry {
     pub month: u8,
     pub scenario_id: i8,
 }
+
+pub struct CalendarEvent {}

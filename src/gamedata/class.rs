@@ -1,4 +1,5 @@
 pub use super::*;
+use crate::unit::Unit;
 
 #[repr(C)]
 pub struct ClassData {
@@ -22,7 +23,7 @@ pub struct ClassData {
     pub unit_scale: u8,
     unknown2: u8,
     pub monster_index: i8,
-    pub class_exp_requirement: i8,
+    pub class_exp_requirement: u8,
     pub base_hp: u8,
     pub exp_coefficient: u8,
     pub movement_type: u8,
@@ -40,8 +41,40 @@ pub struct ClassData {
     pub generic_maddening_abilities: [u8; 5],
 }
 
+#[repr(C)]
+pub struct ClassRequirementData {
+    pub certification_factor: u8,
+    pub required_item: u8,
+    pub cert_flag: u8,
+    pub gender: u8,
+    pub rank_requirements: [u8; 11],
+}
+
 impl FixedDataTable<ClassData, 100> for ClassData {
     fn get_table() -> &'static mut FixedTable<'static, ClassData, 100> {
         return FixedTable::<'static, ClassData, 100>::get_table_mut(0x01b38798);
     }
+}
+
+impl FixedDataTable<ClassRequirementData, 100> for ClassRequirementData {
+    fn get_table() -> &'static mut FixedTable<'static, ClassRequirementData, 100> {
+        return FixedTable::<'static, ClassRequirementData, 100>::get_table_mut(0x01b387a0);
+    }
+}
+
+impl ClassRequirementData {
+    pub fn calculate_cert(&self, unit: &Unit) -> i32 {
+        if self.certification_factor == 0 || self.cert_flag == 0  { return 0; }
+        let mut missing_ranks = 0;
+        for x in 0..11 {
+            if self.rank_requirements[x] == 0 { continue; }
+            if unit.skill_level[x] < self.rank_requirements[x] {
+                missing_ranks += (self.rank_requirements[x] - unit.skill_level[x] ) as i32;
+            }
+        }
+        let cert_percentage = 100 - ( self.certification_factor as i32 ) * missing_ranks;
+        if cert_percentage < 0 { 0 }
+        else { cert_percentage }
+    }
+
 }

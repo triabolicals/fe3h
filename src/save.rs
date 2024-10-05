@@ -24,9 +24,8 @@ pub struct PlayerData {
     pub timeskip: bool,
     pub map_id: u8,
     pub monastery: i8,
-    pub flags_ : [u8; 36],
-    pub the_timeskip: bool, 
-    junk2: [u8; 3073],
+    pub flags : [u8; 271],
+    junk2: [u8; 2839],
 }
 
 #[repr(C)]
@@ -106,9 +105,13 @@ impl ActivityData {
     pub fn set_paralogue_status(&self, map_id: i32, status: bool) {
         unsafe { set_paralogue(self, map_id, status) };
     }
+    pub fn is_paralogue_active(&self, paralogue: i32) -> bool {
+        unsafe { activity_is_paralogue_active(self, paralogue)}
+    }
+    pub fn get_instruction_bonus(&self, skill: i32 ) -> i32 {
+        unsafe { activity_instruction_bonus(self, skill) }
+    }
 }
-
-
 
 #[skyline::from_offset(0x003da660)]
 fn save_set_route(save: &Save, route: i32);
@@ -143,3 +146,10 @@ fn set_paralogue(activities: &ActivityData, map_id: i32, set: bool);
 
 #[skyline::from_offset(0x003eeb30)]
 fn activity_get_quest_status(activities: &ActivityData, quest: i32) -> i32;
+
+
+#[skyline::from_offset(0x003f10c0)]
+pub fn activity_is_paralogue_active(activities: &ActivityData, paralogue: i32) -> bool;
+
+#[skyline::from_offset(0x003f2f20)]
+fn activity_instruction_bonus(activities: &ActivityData, skill: i32) -> i32;

@@ -34,9 +34,7 @@ impl ItemData {
     pub fn get_magic_table() -> &'static mut FixedTable<'static, ItemData, 38> {
         return FixedTable::<'static, ItemData, 38>::get_table_mut(0x01b386f0);
     }
-
     pub fn get_item_table() -> &'static mut FixedTable<'static, ItemData, 200> {
         return FixedTable::<'static, ItemData, 200>::get_table_mut(0x01b38718);
     }
-
 }

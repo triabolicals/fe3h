@@ -1,4 +1,6 @@
 pub use super::*;
+use std::{fs, fs::File, io::Write};
+
 
 #[repr(C)]
 pub struct PersonData {
@@ -42,8 +44,83 @@ pub struct PersonData {
     pub padding: [u8; 2],
 }
 
+#[repr(C)]
+pub struct PlayablePersonData {
+    pub timeskip_autolevels: u8,
+    pub unk0x1: u8,
+    pub faction_pallete: u8,
+    pub pre_cert_classes: [u8; 5],
+    pub flag: u8, 
+    pub starting_ranks: [u8; 11],
+    pub skill_prof: [u8; 11],
+    pub ts_classes: [u8; 3],
+}
+
+#[repr(C)]
+pub struct BuddingTalentData {
+    pub character: i16,
+    pub instructs: u8,
+    pub skill: u8,
+    pub combat_art: u8,
+    pub ability: u8,
+}
 impl FixedDataTable<PersonData, 1201> for PersonData {
     fn get_table() -> &'static mut FixedTable<'static, PersonData, 1201> {
         return FixedTable::<'static, PersonData, 1201>::get_table_mut(0x01b387e8);
+    }
+}
+
+impl FixedDataTable<PlayablePersonData, 45> for PlayablePersonData {
+    fn get_table() -> &'static mut FixedTable<'static, PlayablePersonData, 45> {
+        return FixedTable::<'static, PlayablePersonData, 45>::get_table_mut(0x01b387f0);
+    }
+}
+
+impl FixedDataTable<BuddingTalentData, 240> for BuddingTalentData {
+    fn get_table() -> &'static mut FixedTable<'static, BuddingTalentData, 240> {
+        return FixedTable::<'static, BuddingTalentData, 240>::get_table_mut(0x01b38840);
+    }
+}
+
+impl BuddingTalentData {
+    pub fn get_data(character: i32, skill: u8) -> Option<&'static BuddingTalentData> {
+        let table = Self::get_table();
+        for x in 0..240 {
+            let entry = &table.entries[x as usize];
+            if entry.entry.character as i32  == character && skill == entry.entry.skill {
+                return Some(entry.entry);
+            }
+        }
+        return None;
+
+    }
+}
+
+pub struct SkillGoals {
+    pub value: i16,
+}
+
+impl FixedDataTable<SkillGoals, 200> for SkillGoals {
+    fn get_table() -> &'static mut FixedTable<'static, SkillGoals, 200> {
+        return FixedTable::<'static, SkillGoals, 200>::get_table_mut(0x01b38a50);
+    }
+}
+
+impl SkillGoals {
+    pub fn get_goal_skills(index: usize) -> (i32, i32) {
+        let entry = SkillGoals::get_entry(index);
+        let mut out: [i32; 2] = [11; 2];
+        for x in 0..11 {
+            if entry.value & (1 << x) != 0 {
+                if out[0] == 11 {
+                    out[0] = x as i32;
+                }
+                else if out[1] == 11 {
+                    out[1] = x as i32;
+                    break;
+                }
+            }
+        }
+        return (out[0], out[1]);
     }
 }

@@ -3,3 +3,4 @@ pub mod unit;
 pub mod gamedata;
 pub mod save;
 pub mod random;
+pub mod bai;
